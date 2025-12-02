@@ -3,10 +3,11 @@ import React from "react";
 import UnitsGrid from "../components/UnitsGrid";
 
 /**
- * UnitsPage — hero playground video + units grid
- * - Overlay text removed
- * - Page padding updated to: 2.25rem 1rem 0.75rem
- * - Native controls enabled (fullscreen button visible)
+ * UnitsPage — hero playground video (clean YouTube embed) + units grid
+ * - Playground ID: -Bv4dfKC7nE
+ * - Autoplay, muted, loop via embed params
+ * - youtube-nocookie domain + params to remove chrome (controls, branding, etc.)
+ * - Transparent overlay blocks interactions so no YouTube UI appears
  */
 
 const COLORS = {
@@ -17,14 +18,13 @@ const COLORS = {
   border: "rgba(15,23,36,0.08)",
 };
 
-const VIDEO_SRC = "/videos/playground.MOV"; // update if renamed
-const POSTER = "/images/playground.jpg"; // optional poster
+const PLAYGROUND_ID = "-Bv4dfKC7nE";
+const PLAYGROUND_SRC = `https://www.youtube-nocookie.com/embed/${PLAYGROUND_ID}?autoplay=1&mute=1&loop=1&playlist=${PLAYGROUND_ID}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1&iv_load_policy=3&playsinline=1`;
 
 export default function UnitsPage() {
   return (
     <div style={{ background: "#fbfdfc", minHeight: "100vh", paddingTop: 0 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2.25rem 1rem 0.75rem" }}>
-        
         {/* HEADER */}
         <header style={{ textAlign: "center", marginBottom: 12 }}>
           <h1 style={{ margin: 0, color: COLORS.ink, fontSize: 28 }}>Layout & Parks</h1>
@@ -38,12 +38,12 @@ export default function UnitsPage() {
               marginRight: "auto",
             }}
           >
-            Explore unit types and layouts. Watch the short video tour of our playground and facilities — 
+            Explore unit types and layouts. Watch the short video tour of our playground and facilities —
             perfect for spending quality time with your children.
           </p>
         </header>
 
-        {/* HERO VIDEO */}
+        {/* HERO VIDEO (clean YouTube embed) */}
         <section aria-label="Playground video tour" style={{ marginBottom: 18 }}>
           <div
             style={{
@@ -56,24 +56,35 @@ export default function UnitsPage() {
             }}
           >
             <div style={{ position: "relative", paddingTop: "40%" }}>
-              <video
-                src={VIDEO_SRC}
-                poster={POSTER}
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls={true} // fullscreen button visible
+              <iframe
+                title="Playground — M Legasi"
+                src={PLAYGROUND_SRC}
+                frameBorder="0"
+                allow="autoplay; encrypted-media"
                 style={{
                   position: "absolute",
                   top: 0,
                   left: 0,
                   width: "100%",
                   height: "100%",
-                  objectFit: "cover",
+                  border: "none",
                   display: "block",
+                  pointerEvents: "none", // avoid interactions with iframe itself
                 }}
-                aria-label="Playground video tour"
+                aria-hidden="true"
+              />
+              {/* Overlay to ensure no YouTube chrome / interactions are visible */}
+              <div
+                aria-hidden="true"
+                onClick={(e) => e.preventDefault()}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 2,
+                  background: "transparent",
+                  pointerEvents: "auto",
+                  cursor: "default",
+                }}
               />
             </div>
           </div>

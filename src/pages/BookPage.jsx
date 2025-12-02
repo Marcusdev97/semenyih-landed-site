@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 
 /**
- * ContactPage — simplified form
- * - Removed: Interest, Preferred contact method, consent checkbox, "No obligation"
- * - Kept: Preferred time (optional)
- * - Submits via mailto: (uses SUBMIT_EMAIL)
+ * ContactPage — simplified form + clean showroom video (YouTube embed)
+ * - Showroom Video ID: 9jNRNv6HbvU
+ * - No YouTube UI (controls, branding hidden)
+ * - Autoplay, muted, loop enabled
+ * - Overlay blocks iframe interactions to keep it purely visual
  */
 
 const COLORS = {
@@ -19,6 +20,10 @@ const COLORS = {
 
 const SUBMIT_EMAIL = "marcuschin.biz91@gmail.com";
 
+// YouTube showroom video — clean embed
+const SHOWROOM_ID = "9jNRNv6HbvU";
+const SHOWROOM_SRC = `https://www.youtube-nocookie.com/embed/${SHOWROOM_ID}?autoplay=1&mute=1&loop=1&playlist=${SHOWROOM_ID}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1&iv_load_policy=3&playsinline=1`;
+
 export default function BookPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,11 +34,7 @@ export default function BookPage() {
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
 
-  const validatePhone = (p) => {
-    const n = p.replace(/\s+/g, "");
-    return /^\d{7,15}$/.test(n);
-  };
-
+  const validatePhone = (p) => /^\d{7,15}$/.test(p.replace(/\s+/g, ""));
   const validateEmail = (em) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
 
   function handleSubmit(e) {
@@ -42,8 +43,10 @@ export default function BookPage() {
     setSent(false);
 
     if (!name.trim()) return setError("Please enter your full name.");
-    if (!phone.trim() || !validatePhone(phone)) return setError("Please enter a valid phone number (digits only).");
-    if (!email.trim() || !validateEmail(email)) return setError("Please enter a valid email address.");
+    if (!phone.trim() || !validatePhone(phone))
+      return setError("Please enter a valid phone number (digits only).");
+    if (!email.trim() || !validateEmail(email))
+      return setError("Please enter a valid email address.");
     if (!city.trim()) return setError("Please enter the city you are currently staying in.");
 
     const lines = [
@@ -60,23 +63,35 @@ export default function BookPage() {
     const body = encodeURIComponent(lines.join("\n"));
     const mailto = `mailto:${SUBMIT_EMAIL}?subject=${subject}&body=${body}`;
 
-    // open mail client
     window.location.href = mailto;
     setSent(true);
   }
 
   return (
-    <div style={{ background: "#fbfdfc", minHeight: "100vh", paddingTop: 0 }}>
+    <div style={{ background: "#fbfdfc", minHeight: "100vh" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2.25rem 1rem" }}>
+        
+        {/* HEADER */}
         <div style={{ textAlign: "center", marginBottom: 18 }}>
           <h1 style={{ margin: 0, color: COLORS.ink, fontSize: 32, letterSpacing: -0.3 }}>
             Contact Us
           </h1>
-          <p style={{ marginTop: 8, color: COLORS.copy, fontSize: 15, maxWidth: 760, marginLeft: "auto", marginRight: "auto" }}>
-            Have a question about M Legasi? Tell us how we can help — we reply quickly via WhatsApp or email.
+          <p
+            style={{
+              marginTop: 8,
+              color: COLORS.copy,
+              fontSize: 15,
+              maxWidth: 760,
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            Have a question about M Legasi? Tell us how we can help — we reply quickly via WhatsApp
+            or email.
           </p>
         </div>
 
+        {/* GRID LAYOUT */}
         <div
           style={{
             display: "grid",
@@ -85,7 +100,7 @@ export default function BookPage() {
             alignItems: "start",
           }}
         >
-          {/* LEFT: FORM */}
+          {/* LEFT — FORM */}
           <div>
             <div
               style={{
@@ -93,11 +108,11 @@ export default function BookPage() {
                 borderRadius: 12,
                 padding: 18,
                 border: `1px solid ${COLORS.border}`,
-                boxSizing: "border-box",
               }}
             >
-              <form onSubmit={handleSubmit} aria-label="Contact us form">
+              <form onSubmit={handleSubmit} aria-label="Contact Form">
                 <div style={{ display: "grid", gap: 12 }}>
+                  
                   <Label>Full name</Label>
                   <input
                     aria-label="Full name"
@@ -110,12 +125,13 @@ export default function BookPage() {
 
                   <Label>Phone number (digits only)</Label>
                   <input
-                    aria-label="Phone number"
+                    aria-label="Phone"
                     required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, ""))}
+                    onChange={(e) =>
+                      setPhone(e.target.value.replace(/[^\d]/g, ""))
+                    }
                     placeholder="e.g. 6011xxxxxxxx"
-                    inputMode="tel"
                     style={INPUT}
                   />
 
@@ -125,10 +141,10 @@ export default function BookPage() {
                       <input
                         aria-label="Email"
                         required
+                        type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@domain.com"
-                        type="email"
                         style={INPUT}
                       />
                     </div>
@@ -146,16 +162,18 @@ export default function BookPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", gap: 12 }}>
-                    <div style={{ flex: 1 }}>
-                      <Label>Preferred time (optional)</Label>
-                      <select value={prefTime} onChange={(e) => setPrefTime(e.target.value)} style={SELECT}>
-                        <option value="">Anytime</option>
-                        <option>Morning (9am–12pm)</option>
-                        <option>Afternoon (12pm–4pm)</option>
-                        <option>Evening (4pm–8pm)</option>
-                      </select>
-                    </div>
+                  <div>
+                    <Label>Preferred time (optional)</Label>
+                    <select
+                      value={prefTime}
+                      onChange={(e) => setPrefTime(e.target.value)}
+                      style={SELECT}
+                    >
+                      <option value="">Anytime</option>
+                      <option>Morning (9am–12pm)</option>
+                      <option>Afternoon (12pm–4pm)</option>
+                      <option>Evening (4pm–8pm)</option>
+                    </select>
                   </div>
 
                   <div>
@@ -165,74 +183,92 @@ export default function BookPage() {
                       rows={4}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Tell us more (e.g. which unit type you're interested in)."
+                      placeholder="Tell us more (e.g. which unit you're interested in)"
                       style={TEXTAREA}
                     />
                   </div>
 
-                  {error && <div style={{ color: "#b91c1c", marginTop: 4 }}>{error}</div>}
+                  {error && <div style={{ color: "#b91c1c" }}>{error}</div>}
 
-                  <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 6 }}>
-                    <button
-                      type="submit"
-                      disabled={sent}
-                      style={{
-                        background: COLORS.accent,
-                        color: "#fff",
-                        border: "none",
-                        padding: "12px 18px",
-                        borderRadius: 10,
-                        fontWeight: 800,
-                        cursor: sent ? "default" : "pointer",
-                        flex: 1,
-                        fontSize: 16,
-                        opacity: sent ? 0.85 : 1,
-                      }}
-                    >
-                      {sent ? "Inquiry Opened" : "Send enquiry"}
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    disabled={sent}
+                    style={{
+                      background: COLORS.accent,
+                      color: "#fff",
+                      border: "none",
+                      padding: "12px 18px",
+                      borderRadius: 10,
+                      fontWeight: 800,
+                      cursor: sent ? "default" : "pointer",
+                      fontSize: 16,
+                      marginTop: 10,
+                      opacity: sent ? 0.85 : 1,
+                    }}
+                  >
+                    {sent ? "Inquiry Opened" : "Send enquiry"}
+                  </button>
 
-                  <div style={{ display: "flex", gap: 12, marginTop: 8, color: COLORS.copy, fontSize: 13, alignItems: "center", flexWrap: "wrap" }}>
-                    <TinyDotText text="Developer: MahSing" />
-                    <TinyDotText text="We reply on WhatsApp / Call" />
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      color: COLORS.copy,
+                      fontSize: 13,
+                      marginTop: 8,
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <TinyDot text="Developer: MahSing" />
+                    <TinyDot text="We reply on WhatsApp / Call" />
                   </div>
                 </div>
               </form>
             </div>
 
-            <div style={{ marginTop: 12, color: COLORS.copy, fontSize: 13 }}>
-              <div style={{ fontWeight: 700, color: COLORS.ink }}>Response times</div>
-              <div style={{ marginTop: 6 }}>
-                We typically reply within a few hours during business hours. If you prefer immediate contact, please choose WhatsApp.
-              </div>
-            </div>
-
             {sent && (
-              <div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: "#ecfdf5", border: `1px solid rgba(6,95,70,0.12)`, color: "#065f46", fontWeight: 700 }}>
-                Thank you — your default mail client opened. We'll contact you to follow up.
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: 12,
+                  borderRadius: 8,
+                  background: "#ecfdf5",
+                  border: `1px solid rgba(6,95,70,0.12)`,
+                  color: "#065f46",
+                  fontWeight: 700,
+                }}
+              >
+                Thank you — your email app opened. We'll contact you shortly.
               </div>
             )}
           </div>
 
-          {/* RIGHT: MEDIA / WHY CONTACT */}
-          <aside style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "stretch" }}>
-            <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${COLORS.border}`, background: COLORS.cardBg, boxSizing: "border-box" }}>
+          {/* RIGHT — MEDIA + WHY CONTACT */}
+          <aside style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div
+              style={{
+                borderRadius: 12,
+                overflow: "hidden",
+                border: `1px solid ${COLORS.border}`,
+                background: COLORS.cardBg,
+              }}
+            >
               <MediaBox />
             </div>
 
             <div style={{ color: COLORS.copy, fontSize: 14 }}>
               <div style={{ fontWeight: 800, color: COLORS.ink }}>Why contact us?</div>
-              <ul style={{ marginTop: 8, paddingLeft: 18, color: COLORS.copy }}>
+              <ul style={{ marginTop: 8, paddingLeft: 18 }}>
                 <li>Get current availability & pricing</li>
-                <li>Ask about financing and downpayment plans</li>
-                <li>Schedule an in-person showroom visit</li>
+                <li>Ask about financing & downpayment</li>
+                <li>Schedule a showroom visit</li>
               </ul>
             </div>
           </aside>
         </div>
 
-        {/* responsive tweaks */}
+        {/* Responsive */}
         <style>{`
           @media (max-width: 980px) {
             div[style*="grid-template-columns: 1fr 360px"] {
@@ -245,7 +281,20 @@ export default function BookPage() {
   );
 }
 
-/* ---------- styles + small components ---------- */
+/* ---------- Shared UI Components ---------- */
+
+function Label({ children }) {
+  return <div style={{ marginBottom: 4, color: "#44505A", fontWeight: 700 }}>{children}</div>;
+}
+
+function TinyDot({ text }) {
+  return (
+    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+      <div style={{ width: 8, height: 8, borderRadius: 99, background: "#065f46" }} />
+      <div>{text}</div>
+    </div>
+  );
+}
 
 const INPUT = {
   width: "100%",
@@ -254,16 +303,18 @@ const INPUT = {
   border: `1px solid rgba(15,23,36,0.08)`,
   height: 44,
   fontSize: 15,
-  boxSizing: "border-box",
   outline: "none",
+  boxSizing: "border-box",
 };
 
 const SELECT = {
   ...INPUT,
   appearance: "none",
-  backgroundImage: `linear-gradient(45deg, transparent 50%, #000 50%), linear-gradient(135deg, #000 50%, transparent 50%)`,
-  backgroundPosition: "calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px)",
-  backgroundSize: "6px 6px, 6px 6px",
+  background:
+    "linear-gradient(45deg, transparent 50%, #000 50%), linear-gradient(135deg, #000 50%, transparent 50%)",
+  backgroundPosition:
+    "calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px)",
+  backgroundSize: "6px 6px",
   backgroundRepeat: "no-repeat",
   paddingRight: 36,
 };
@@ -274,40 +325,43 @@ const TEXTAREA = {
   borderRadius: 8,
   border: `1px solid rgba(15,23,36,0.08)`,
   fontSize: 15,
+  minHeight: 96,
   outline: "none",
   resize: "vertical",
-  minHeight: 96,
   boxSizing: "border-box",
 };
 
-function Label({ children }) {
-  return <div style={{ marginBottom: 4, color: "#44505A", fontWeight: 700 }}>{children}</div>;
-}
-
-function TinyDotText({ text }) {
-  return (
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <div style={{ width: 8, height: 8, borderRadius: 99, background: "#065f46" }} />
-      <div>{text}</div>
-    </div>
-  );
-}
+/* ---------- Clean Video Component ---------- */
 
 function MediaBox() {
-  const mp4 = "/videos/showroom.mp4";
-  const img = "/images/TypeA.png";
   return (
-    <div style={{ width: "100%", height: 260, background: "#f6f6f6" }}>
-      <video
-        src={mp4}
-        autoPlay
-        muted
-        loop
-        playsInline
-        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-      >
-        <img src={img} alt="Showroom" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      </video>
+    <div style={{ width: "100%", height: 260, background: "#f6f6f6", position: "relative" }}>
+      <iframe
+        title="Showroom — M Legasi"
+        src={SHOWROOM_SRC}
+        frameBorder="0"
+        allow="autoplay; encrypted-media"
+        style={{
+          width: "100%",
+          height: "100%",
+          border: "none",
+          display: "block",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* UI-blocking overlay */}
+      <div
+        aria-hidden="true"
+        onClick={(e) => e.preventDefault()}
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 2,
+          background: "transparent",
+          pointerEvents: "auto",
+        }}
+      />
     </div>
   );
 }

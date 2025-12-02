@@ -1,58 +1,32 @@
-import React, { useRef, useEffect, useState } from "react";
+// src/components/VideoHero.jsx
+import React from "react";
 
-export default function VideoHero({
-  src = "/videos/discover.mp4",
-  poster = "/images/park.png",
-}) {
-  const videoRef = useRef(null);
-  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+/**
+ * VideoHero — Discover video (clean YouTube embed)
+ *
+ * - Uses youtube-nocookie domain to reduce tracking
+ * - Player params remove chrome: controls=0, modestbranding=1, rel=0, etc.
+ * - Autoplay muted loop via autoplay=1&mute=1&loop=1&playlist=<id>
+ * - A transparent overlay intercepts pointer events so the YouTube UI and interactions are not visible/usable
+ *
+ * Accessibility note:
+ * - The iframe has a descriptive title for assistive tech.
+ * - The overlay is aria-hidden so it won't confuse screen readers.
+ */
 
-  useEffect(() => {
-    const tryPlay = async () => {
-      if (!videoRef.current) return;
-      try {
-        await videoRef.current.play();
-        setAutoplayBlocked(false);
-      } catch {
-        setAutoplayBlocked(true);
-      }
-    };
-    tryPlay();
-  }, []);
+const DEFAULT_VIDEO_ID = "Emsz_A6XHGM";
 
-  const handlePlay = async () => {
-    try {
-      await videoRef.current.play();
-      setAutoplayBlocked(false);
-    } catch {
-      setAutoplayBlocked(true);
-    }
-  };
-
-  const handleFullscreen = () => {
-    if (videoRef.current && videoRef.current.requestFullscreen) {
-      videoRef.current.requestFullscreen();
-    }
-  };
+export default function VideoHero({ videoId = DEFAULT_VIDEO_ID, poster = "/images/park.png" }) {
+  const src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1&iv_load_policy=3&playsinline=1`;
 
   return (
     <section style={{ padding: "2.5rem 1rem" }}>
-      {/* FIX: Align header text with same column width */}
-      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-        <h2
-          style={{
-            textAlign: "center",
-            fontSize: 22,
-            marginBottom: 18,
-            fontWeight: 700,
-            color: "#064e3b",
-          }}
-        >
+      <div style={{ maxWidth: 1120, margin: "0 auto", textAlign: "center" }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#064e3b", marginBottom: 18 }}>
           Discover the Neighborhood
         </h2>
       </div>
 
-      {/* Video wrapper aligned to same max width */}
       <div
         className="vh-root"
         style={{
@@ -66,108 +40,37 @@ export default function VideoHero({
           background: "#000",
         }}
       >
-        <video
-          ref={videoRef}
+        <iframe
+          title="Discover — M Legasi (neighborhood tour)"
           src={src}
-          poster={poster}
-          muted
-          loop
-          playsInline
-          autoPlay
+          frameBorder="0"
+          allow="autoplay; encrypted-media; fullscreen"
           style={{
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            border: "none",
+            display: "block",
+            pointerEvents: "none", // prevent direct interaction with the iframe itself
           }}
         />
 
-        {autoplayBlocked && (
-          <button
-            onClick={handlePlay}
-            style={{
-              position: "absolute",
-              right: 16,
-              bottom: 16,
-              background: "rgba(0,0,0,0.6)",
-              color: "#fff",
-              border: "none",
-              padding: "8px 12px",
-              borderRadius: 8,
-              cursor: "pointer",
-              zIndex: 20,
-            }}
-          >
-            ▶︎
-          </button>
-        )}
-
-        <button
-          onClick={handleFullscreen}
+        {/* Transparent overlay to ensure no YouTube chrome / interactions are visible.
+            We capture pointer events here so the iframe remains non-interactive.
+            aria-hidden so screen readers ignore this decorative overlay. */}
+        <div
+          aria-hidden="true"
+          onClick={(e) => e.preventDefault()}
           style={{
             position: "absolute",
-            top: 16,
-            right: 16,
-            background: "rgba(0,0,0,0.6)",
-            color: "#fff",
-            border: "none",
-            padding: "6px 10px",
-            borderRadius: 6,
-            cursor: "pointer",
-            zIndex: 20,
+            inset: 0,
+            zIndex: 2,
+            background: "transparent",
+            cursor: "default",
+            // capture pointer events so underlying iframe UI cannot be triggered
+            pointerEvents: "auto",
           }}
-        >
-          ⛶
-        </button>
-      </div>
-
-      {/* 3 Image cards aligned to same width */}
-      <div
-        className="three-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 18,
-          marginTop: 20,
-          maxWidth: 1120,
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        <div className="thumb-card" style={cardStyle}>
-          <img src="/images/school.png" alt="Nearby Schools" style={imgStyle} />
-          <p style={textStyle}>Nearby Schools</p>
-        </div>
-
-        <div className="thumb-card" style={cardStyle}>
-          <img src="/images/supermarket.png" alt="Supermarket" style={imgStyle} />
-          <p style={textStyle}>Supermarket</p>
-        </div>
-
-        <div className="thumb-card" style={cardStyle}>
-          <img src="/images/hospital.png" alt="Hospitals" style={imgStyle} />
-          <p style={textStyle}>Hospitals & Clinics</p>
-        </div>
+        />
       </div>
     </section>
   );
 }
-
-const cardStyle = {
-  background: "#fff",
-  borderRadius: 10,
-  overflow: "hidden",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-  textAlign: "center",
-};
-
-const imgStyle = {
-  width: "100%",
-  height: 220,
-  objectFit: "cover",
-};
-
-const textStyle = {
-  margin: "10px 0",
-  fontSize: 15,
-  fontWeight: 600,
-};
