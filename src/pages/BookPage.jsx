@@ -2,11 +2,13 @@
 import React, { useState } from "react";
 
 /**
- * ContactPage — simplified form + clean showroom video (YouTube embed)
- * - Showroom Video ID: 9jNRNv6HbvU
- * - No YouTube UI (controls, branding hidden)
- * - Autoplay, muted, loop enabled
- * - Overlay blocks iframe interactions to keep it purely visual
+ * BookPage — submit directly to Google Forms (formResponse) without redirect.
+ * - Uses a hidden form + hidden iframe to POST data to Google.
+ * - Note: response is not readable due to CORS; we show an optimistic success message.
+ *
+ * Requirements:
+ * - FIELD_IDS must match your Google Form entry IDs (already filled from your prefill link).
+ * - FORM_ACTION must be the Google formResponse endpoint for your form.
  */
 
 const COLORS = {
@@ -18,11 +20,16 @@ const COLORS = {
   subtle: "#f6f9f7",
 };
 
-const SUBMIT_EMAIL = "marcuschin.biz91@gmail.com";
-
-// YouTube showroom video — clean embed
-const SHOWROOM_ID = "9jNRNv6HbvU";
-const SHOWROOM_SRC = `https://www.youtube-nocookie.com/embed/${SHOWROOM_ID}?autoplay=1&mute=1&loop=1&playlist=${SHOWROOM_ID}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1&iv_load_policy=3&playsinline=1`;
+// Google Form endpoints / IDs (from your prefilled link)
+const FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfz2Kdgh8Q_v3WuP05jybnojAeIk1AZxwolWprfKop94SwoLA/formResponse";
+const FIELD_IDS = {
+  name: "entry.1623702764",
+  phone: "entry.307574555",
+  email: "entry.226559707",
+  city: "entry.706402315",
+  prefTime: "entry.37580560",
+  message: "entry.1272408800",
+};
 
 export default function BookPage() {
   const [name, setName] = useState("");
@@ -33,11 +40,64 @@ export default function BookPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const validatePhone = (p) => /^\d{7,15}$/.test(p.replace(/\s+/g, ""));
   const validateEmail = (em) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
 
-  function handleSubmit(e) {
+  function clearForm() {
+    setName("");
+    setPhone("");
+    setEmail("");
+    setCity("");
+    setPrefTime("");
+    setMessage("");
+    setError("");
+  }
+
+  // Core: create a hidden form, append inputs, target a hidden iframe, submit it.
+  function submitToGoogleForm(values) {
+    // Create hidden iframe
+    const iframeName = "hidden-gform-iframe-" + Date.now();
+    const iframe = document.createElement("iframe");
+    iframe.name = iframeName;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    // Create form element
+    const form = document.createElement("form");
+    form.action = FORM_ACTION;
+    form.method = "POST";
+    form.target = iframeName;
+    form.style.display = "none";
+
+    // Append inputs for each field id
+    for (const [key, entryId] of Object.entries(FIELD_IDS)) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = entryId;
+      input.value = values[key] ?? "";
+      form.appendChild(input);
+    }
+
+    // Append and submit
+    document.body.appendChild(form);
+
+    // Submit the form (this will POST to Google and the response loads into the hidden iframe)
+    form.submit();
+
+    // cleanup after a short delay (give browser time to post)
+    setTimeout(() => {
+      try {
+        document.body.removeChild(form);
+      } catch (err) {}
+      try {
+        document.body.removeChild(iframe);
+      } catch (err) {}
+    }, 3000);
+  }
+
+  async function handleSubmit(e) {
     e?.preventDefault();
     setError("");
     setSent(false);
@@ -49,42 +109,36 @@ export default function BookPage() {
       return setError("Please enter a valid email address.");
     if (!city.trim()) return setError("Please enter the city you are currently staying in.");
 
-    const lines = [
-      "Inquiry: Contact Us — M Legasi",
-      `Name: ${name.trim()}`,
-      `Phone: ${phone.trim()}`,
-      `Email: ${email.trim()}`,
-      `City: ${city.trim()}`,
-      prefTime ? `Preferred time: ${prefTime}` : "",
-      message.trim() ? `Message: ${message.trim()}` : "",
-    ].filter(Boolean);
+    const payload = {
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      city: city.trim(),
+      prefTime: prefTime || "",
+      message: message.trim() || "",
+    };
 
-    const subject = encodeURIComponent("M Legasi — Contact Us Inquiry");
-    const body = encodeURIComponent(lines.join("\n"));
-    const mailto = `mailto:${SUBMIT_EMAIL}?subject=${subject}&body=${body}`;
+    setLoading(true);
 
-    // open user's mail client prefilled
-    window.location.href = mailto;
+    try {
+      // Submit via hidden form to Google Forms
+      submitToGoogleForm(payload);
 
-    // show popout alert (exact requested text) then clear the form
-    alert("Thank you — your inquiry had been send. We'll contact you shortly.");
-
-    // clear form fields
-    setName("");
-    setPhone("");
-    setEmail("");
-    setCity("");
-    setPrefTime("");
-    setMessage("");
-    setError("");
-    setSent(true);
+      // Optimistically assume success (we cannot read response due to CORS)
+      alert("Thank you — your inquiry had been send. We'll contact you shortly.");
+      clearForm();
+      setSent(true);
+    } catch (err) {
+      console.error("Submit error", err);
+      setError("Couldn't submit form. Please try again or contact us directly.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div style={{ background: "#fbfdfc", minHeight: "100vh" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2.25rem 1rem" }}>
-        
-        {/* HEADER */}
         <div style={{ textAlign: "center", marginBottom: 18 }}>
           <h1 style={{ margin: 0, color: COLORS.ink, fontSize: 32, letterSpacing: -0.3 }}>
             Contact Us
@@ -104,7 +158,6 @@ export default function BookPage() {
           </p>
         </div>
 
-        {/* GRID LAYOUT */}
         <div
           style={{
             display: "grid",
@@ -113,7 +166,7 @@ export default function BookPage() {
             alignItems: "start",
           }}
         >
-          {/* LEFT — FORM */}
+          {/* Left: form */}
           <div>
             <div
               style={{
@@ -125,7 +178,6 @@ export default function BookPage() {
             >
               <form onSubmit={handleSubmit} aria-label="Contact Form">
                 <div style={{ display: "grid", gap: 12 }}>
-                  
                   <Label>Full name</Label>
                   <input
                     aria-label="Full name"
@@ -141,9 +193,7 @@ export default function BookPage() {
                     aria-label="Phone"
                     required
                     value={phone}
-                    onChange={(e) =>
-                      setPhone(e.target.value.replace(/[^\d]/g, ""))
-                    }
+                    onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, ""))}
                     placeholder="e.g. 6011xxxxxxxx"
                     style={INPUT}
                   />
@@ -177,11 +227,7 @@ export default function BookPage() {
 
                   <div>
                     <Label>Preferred time contact (optional)</Label>
-                    <select
-                      value={prefTime}
-                      onChange={(e) => setPrefTime(e.target.value)}
-                      style={SELECT}
-                    >
+                    <select value={prefTime} onChange={(e) => setPrefTime(e.target.value)} style={SELECT}>
                       <option value="">Anytime</option>
                       <option>Morning (9am–12pm)</option>
                       <option>Afternoon (12pm–4pm)</option>
@@ -205,7 +251,7 @@ export default function BookPage() {
 
                   <button
                     type="submit"
-                    disabled={sent}
+                    disabled={sent || loading}
                     style={{
                       background: COLORS.accent,
                       color: "#fff",
@@ -213,13 +259,13 @@ export default function BookPage() {
                       padding: "12px 18px",
                       borderRadius: 10,
                       fontWeight: 800,
-                      cursor: sent ? "default" : "pointer",
+                      cursor: sent || loading ? "default" : "pointer",
                       fontSize: 16,
                       marginTop: 10,
-                      opacity: sent ? 0.85 : 1,
+                      opacity: sent || loading ? 0.85 : 1,
                     }}
                   >
-                    {sent ? "Inquiry Opened" : "Send enquiry"}
+                    {loading ? "Sending..." : sent ? "Submitted" : "Send enquiry"}
                   </button>
 
                   <div
@@ -252,12 +298,12 @@ export default function BookPage() {
                   fontWeight: 700,
                 }}
               >
-                Thank you — your inquiry has been submitted. We'll contact you shortly.
+                Thank you — your inquiry had been send. We'll contact you shortly.
               </div>
             )}
           </div>
 
-          {/* RIGHT — MEDIA + WHY CONTACT */}
+          {/* Right: media */}
           <aside style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div
               style={{
@@ -351,7 +397,7 @@ function MediaBox() {
     <div style={{ width: "100%", height: 260, background: "#f6f6f6", position: "relative" }}>
       <iframe
         title="Showroom — M Legasi"
-        src={SHOWROOM_SRC}
+        src={`https://www.youtube-nocookie.com/embed/9jNRNv6HbvU?autoplay=1&mute=1&loop=1&playlist=9jNRNv6HbvU&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1&iv_load_policy=3&playsinline=1`}
         frameBorder="0"
         allow="autoplay; encrypted-media"
         style={{
@@ -362,8 +408,6 @@ function MediaBox() {
           pointerEvents: "none",
         }}
       />
-
-      {/* UI-blocking overlay */}
       <div
         aria-hidden="true"
         onClick={(e) => e.preventDefault()}
