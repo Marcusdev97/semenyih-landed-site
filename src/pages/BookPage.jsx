@@ -63,7 +63,20 @@ export default function BookPage() {
     const body = encodeURIComponent(lines.join("\n"));
     const mailto = `mailto:${SUBMIT_EMAIL}?subject=${subject}&body=${body}`;
 
+    // open user's mail client prefilled
     window.location.href = mailto;
+
+    // show popout alert (exact requested text) then clear the form
+    alert("Thank you — your inquiry had been send. We'll contact you shortly.");
+
+    // clear form fields
+    setName("");
+    setPhone("");
+    setEmail("");
+    setCity("");
+    setPrefTime("");
+    setMessage("");
+    setError("");
     setSent(true);
   }
 
@@ -163,7 +176,7 @@ export default function BookPage() {
                   </div>
 
                   <div>
-                    <Label>Preferred time (optional)</Label>
+                    <Label>Preferred time contact (optional)</Label>
                     <select
                       value={prefTime}
                       onChange={(e) => setPrefTime(e.target.value)}
@@ -239,7 +252,7 @@ export default function BookPage() {
                   fontWeight: 700,
                 }}
               >
-                Thank you — your email app opened. We'll contact you shortly.
+                Thank you — your inquiry has been submitted. We'll contact you shortly.
               </div>
             )}
           </div>
