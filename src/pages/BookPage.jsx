@@ -154,7 +154,7 @@ export default function BookPage() {
             }}
           >
             Have a question about M Legasi? Tell us how we can help — we reply quickly via WhatsApp
-            or email.
+            or call.
           </p>
         </div>
 
@@ -279,8 +279,9 @@ export default function BookPage() {
                       flexWrap: "wrap",
                     }}
                   >
-                    <TinyDot text="Developer: MahSing" />
-                    <TinyDot text="We reply on WhatsApp / Call" />
+                    <TinyDot text="Developer: Zero Downpayment" />
+                    <TinyDot text="Developer: Construction Subsidy" />
+                    <TinyDot text="Developer: FREE SPA,LA & MOT" />
                   </div>
                 </div>
               </form>

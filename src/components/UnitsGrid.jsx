@@ -6,6 +6,7 @@ const units = [
     title: "Type A — Intermediate",
     dims: "20' x 60'",
     sqft: "1,555 sf",
+    backyard: "6' ft backyard",
     oldPrice: 691000,
     promoPrice: 534560,
     img: "/images/TypeA.png",
@@ -15,15 +16,17 @@ const units = [
     title: "Type B — Intermediate",
     dims: "20' x 65'",
     sqft: "1,555 sf",
+    backyard: "11' ft backyard",
     oldPrice: 693800,
     promoPrice: 536126,
     img: "/images/TypeB.png",
   },
   {
     id: "C",
-    title: "Type C — Intermediate (Corner)",
+    title: "Type C — Intermediate",
     dims: "20' x 70'",
     sqft: "1,686 sf",
+    backyard: "13' ft backyard",
     oldPrice: 743800,
     promoPrice: 575772,
     img: "/images/TypeC.png",
@@ -48,7 +51,7 @@ export default function UnitsGrid() {
               <img src={u.img} alt={u.title} style={{ width: "100%", objectFit: "contain", borderRadius: 8, background: "#faf7f4" }} />
               <div style={{ paddingTop: 12 }}>
                 <div style={{ fontWeight: 700, fontSize: 16, color: "#065f46" }}>{u.title}</div>
-                <div style={{ color: "#6b7280", marginTop: 8 }}>{u.dims} • {u.sqft} • 4 Rooms • 3 Baths • 4 Car Parks</div>
+                <div style={{ color: "#6b7280", marginTop: 8 }}>{u.dims} • {u.sqft} • 4 Rooms • 3 Baths • {u.backyard}</div>
 
                 {/* pricing block */}
                 <div style={{ marginTop: 10, display: "flex", alignItems: "baseline", gap: 12 }}>

@@ -13,7 +13,7 @@ export default function Header() {
       <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 1rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ height: 36, width: 36, borderRadius: 8, background: '#059669', display: 'grid', placeItems: 'center', color: '#fff', fontWeight: 700 }}>M</div>
-          <div style={{ fontWeight: 600 }}>M Legasi - Semenyih</div>
+          <div style={{ fontWeight: 600 }}>Affordable Freehold Double Storey - Semenyih</div>
         </div>
 
         <nav style={{ display: 'flex', gap: 18 }}>
